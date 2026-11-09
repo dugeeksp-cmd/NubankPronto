@@ -1,0 +1,6 @@
+{
+  "name": "Nubank",
+  "description": "Aplicativo do Nubank para gestão de conta digital, cartão de crédito, transferências Pix, Caixinhas e investimentos com suporte PWA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
