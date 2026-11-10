@@ -39,7 +39,6 @@ export const PixModal: React.FC<PixModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<{ amount: number; recipient: string } | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
-  const [pixLimitExceeded, setPixLimitExceeded] = useState(true);
 
   const cleanName = playerName.toLowerCase().replace(/\s+/g, '.').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const myPixKey = `${cleanName || 'lucas.santos'}@nurpg.com.br`;
@@ -58,11 +57,9 @@ export const PixModal: React.FC<PixModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Verificação de limite diário Pix excedido
-    if (pixLimitExceeded) {
-      setError('Atenção: O seu limite diário de transferência Pix é de R$ 30.000,00 e já foi excedido para o dia de hoje.');
-      return;
-    }
+    // Verificação de limite Pix excedido
+    setError('Atenção: O seu limite de transferência Pix excedeu o teto mensal de R$ 30.000,00. O ajuste de limite estará disponível para alteração apenas no próximo mês.');
+    return;
 
     const amount = parseFloat(amountStr);
     if (isNaN(amount) || amount <= 0) {
@@ -179,33 +176,23 @@ export const PixModal: React.FC<PixModalProps> = ({
         ) : activeTab === 'transfer' ? (
           /* Transfer Form */
           <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
-            {/* Banner de Aviso de Limite Diário Excedido (Estilo Notificação Nubank) */}
+            {/* Banner de Aviso de Limite Mensal Excedido (Estilo Notificação Nubank) */}
             <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-2xl flex items-start gap-3 shadow-2xs animate-in fade-in duration-200">
               <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-amber-950 leading-tight">
-                    Limite Pix Diário Atingido
+                    Limite Pix Mensal Atingido
                   </h4>
                   <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded-md">
-                    {pixLimitExceeded ? 'Bloqueado' : 'Liberado'}
+                    Bloqueado
                   </span>
                 </div>
                 <p className="text-[11px] text-amber-900 mt-1 leading-snug">
-                  <strong>Atenção:</strong> O seu limite diário de transferência Pix é de <strong>R$ 30.000,00</strong> e já foi excedido para o dia de hoje.
+                  <strong>Atenção:</strong> O seu limite de transferência Pix excedeu o teto mensal de <strong>R$ 30.000,00</strong>. O ajuste de limite estará disponível para alteração apenas no próximo mês.
                 </p>
-                <div className="mt-2 pt-2 border-t border-amber-200/80 flex items-center justify-between text-[10px]">
-                  <span className="text-amber-800">Transferências diárias restabelecidas às 06:00</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPixLimitExceeded(!pixLimitExceeded);
-                      setError(null);
-                    }}
-                    className="font-bold text-[#820ad1] hover:underline"
-                  >
-                    {pixLimitExceeded ? 'Liberar limite de teste' : 'Restaurar limite excedido'}
-                  </button>
+                <div className="mt-2 pt-2 border-t border-amber-200/80 text-[10px] text-amber-800">
+                  Diretriz de Segurança do Banco Central · Renovação no 1º dia útil do mês
                 </div>
               </div>
             </div>
@@ -367,23 +354,10 @@ export const PixModal: React.FC<PixModalProps> = ({
 
             <button
               type="submit"
-              className={`w-full font-bold text-xs py-3.5 rounded-full transition-all shadow-sm flex items-center justify-center gap-2 mt-2 ${
-                pixLimitExceeded
-                  ? 'bg-neutral-200 hover:bg-neutral-300 text-neutral-600 border border-neutral-300 cursor-not-allowed'
-                  : 'bg-[#820ad1] hover:bg-[#7208b8] active:scale-95 text-white'
-              }`}
+              className="w-full font-bold text-xs py-3.5 rounded-full transition-all shadow-sm flex items-center justify-center gap-2 mt-2 bg-neutral-200 hover:bg-neutral-300 text-neutral-600 border border-neutral-300 cursor-not-allowed"
             >
-              {pixLimitExceeded ? (
-                <>
-                  <ShieldAlert className="w-4 h-4 text-amber-600" />
-                  <span>Transferência Indisponível (Limite Excedido)</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>Transferir Agora</span>
-                </>
-              )}
+              <ShieldAlert className="w-4 h-4 text-amber-600" />
+              <span>Transferência Indisponível (Limite Excedido)</span>
             </button>
           </form>
         ) : (

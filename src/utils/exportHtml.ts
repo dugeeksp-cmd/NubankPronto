@@ -98,7 +98,6 @@ export function generateStandaloneHTML(state: BankState): string {
     let state = DEFAULT_STATE;
     let deferredInstallPrompt = null;
     let isPwaInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    let isPixLimitExceeded = true;
 
     // Purga forçada de chaves legadas
     try {
@@ -646,22 +645,19 @@ export function generateStandaloneHTML(state: BankState): string {
         </div>
 
         <div class="p-5 overflow-y-auto space-y-4 text-xs">
-          <!-- Alerta em Destaque: Limite Pix Diário Excedido -->
+          <!-- Alerta em Destaque: Limite Pix Mensal Excedido -->
           <div id="pixLimitAlertBanner" class="p-3.5 bg-amber-50 border border-amber-300 rounded-2xl flex items-start gap-2.5 shadow-2xs">
             <span class="text-lg">⚠️</span>
             <div class="flex-1">
               <div class="flex items-center justify-between">
-                <h4 class="text-xs font-bold text-amber-950">Limite Pix Diário Atingido</h4>
-                <span id="limitBadge" class="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded-md">\${isPixLimitExceeded ? 'Bloqueado' : 'Liberado'}</span>
+                <h4 class="text-xs font-bold text-amber-950">Limite Pix Mensal Atingido</h4>
+                <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded-md">Bloqueado</span>
               </div>
               <p class="text-[11px] text-amber-900 mt-1 leading-snug">
-                <strong>Atenção:</strong> O seu limite diário de transferência Pix é de <strong>R$ 30.000,00</strong> e já foi excedido para o dia de hoje.
+                <strong>Atenção:</strong> O seu limite de transferência Pix excedeu o teto mensal de <strong>R$ 30.000,00</strong>. O ajuste de limite estará disponível para alteração apenas no próximo mês.
               </p>
-              <div class="mt-2 pt-2 border-t border-amber-200 flex justify-between items-center text-[10px]">
-                <span class="text-amber-800">Restabelecimento diário às 06:00</span>
-                <button onclick="togglePixLimitRelease()" class="text-[#820ad1] font-bold underline">
-                  \${isPixLimitExceeded ? 'Liberar limite de teste' : 'Restaurar limite excedido'}
-                </button>
+              <div class="mt-2 pt-2 border-t border-amber-200 text-[10px] text-amber-800">
+                Diretriz de Segurança do Banco Central · Renovação no 1º dia útil do mês
               </div>
             </div>
           </div>
@@ -683,12 +679,8 @@ export function generateStandaloneHTML(state: BankState): string {
             <input id="pix-note" type="text" placeholder="Pagamento de conta, Churrasco, Aluguel" class="w-full px-3 py-2 bg-[#f0f1f5] rounded-xl text-xs outline-none" />
           </div>
 
-          <button id="pixSubmitBtn" onclick="attemptPixTransfer()" class="w-full py-3.5 rounded-full font-bold text-xs transition-all \${
-            isPixLimitExceeded
-              ? 'bg-neutral-200 text-neutral-600 border border-neutral-300 cursor-not-allowed'
-              : 'bg-[#820ad1] text-white shadow-sm'
-          }">
-            \${isPixLimitExceeded ? '🛡️ Transferência Indisponível (Limite Excedido)' : 'Transferir Agora'}
+          <button id="pixSubmitBtn" onclick="attemptPixTransfer()" class="w-full py-3.5 rounded-full font-bold text-xs transition-all bg-neutral-200 text-neutral-600 border border-neutral-300 cursor-not-allowed">
+            🛡️ Transferência Indisponível (Limite Excedido)
           </button>
         </div>
       \`;
@@ -696,40 +688,9 @@ export function generateStandaloneHTML(state: BankState): string {
       overlay.classList.remove('hidden');
     }
 
-    function togglePixLimitRelease() {
-      isPixLimitExceeded = !isPixLimitExceeded;
-      openPixModal();
-    }
-
     function attemptPixTransfer() {
-      if (isPixLimitExceeded) {
-        alert('Atenção: O seu limite diário de transferência Pix é de R$ 30.000,00 e já foi excedido para o dia de hoje.');
-        return;
-      }
-
-      const valInput = parseFloat(document.getElementById('pix-val')?.value?.replace(',', '.') || '');
-      const dest = document.getElementById('pix-dest')?.value || 'Fernanda Ribeiro Morelo';
-      const note = document.getElementById('pix-note')?.value || 'Transferência Pix';
-
-      if (isNaN(valInput) || valInput <= 0) return alert('Por favor, informe um valor válido maior que zero.');
-      if (valInput > state.balance) return alert('Saldo insuficiente na conta corrente.');
-
-      state.balance -= valInput;
-      state.transactions.unshift({
-        id: 'tx-' + Date.now(),
-        title: dest,
-        subtitle: 'Envio Pix · ' + note,
-        amount: -valInput,
-        date: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        category: 'pix',
-        recipientOrPayer: dest,
-        note: note,
-        authCode: 'E820AD1-' + Math.random().toString(36).substring(2, 9).toUpperCase()
-      });
-
-      saveState();
-      closeModal();
-      alert('Transferência Pix de ' + formatBRL(valInput) + ' para ' + dest + ' realizada com sucesso!');
+      alert('Atenção: O seu limite de transferência Pix excedeu o teto mensal de R$ 30.000,00. O ajuste de limite estará disponível para alteração apenas no próximo mês.');
+      return;
     }
 
     function openLoanModal() {
